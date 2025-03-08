@@ -27,17 +27,15 @@ The **NeuroCardiac Digital Twin** is an AI-powered system that integrates **EEG 
 
 ## 🛠️ Tech Stack
 - **AI & ML:** Scikit-Learn (Random Forest, Isolation Forest), Mistral AI, Google Gemini API
-- **Data Processing:** NumPy, Pandas, FastAPI
-- **Real-Time Pipelines:** Apache Kafka
-- **Chatbot:** LangChain + Mistral AI API
-- **3D Visualization:** Three.js, Unity
+- **Chatbot:** Mistral AI API
+- **3D Visualization:** Three.js
 
 ## 📌 Features
 ✅ Real-time **EEG & ECG monitoring**  
 ✅ AI-powered **anomaly detection**  
 ✅ **Predictive analytics** for future health risks  
 ✅ **Health alerts & recommendations** via Google Gemini  
-✅ **Mistral AI chatbot** for patient queries  
+✅ **Mistral AI chatbot** for patient queries and future predictions
 ✅ **3D Digital Twin visualization**  
 
 ## 🎯 Future Enhancements
@@ -59,7 +57,7 @@ pip install -r requirements.txt
 
 ### 3️⃣ Run the Application
 ```bash
-python app.py
+python main.py
 ```
 
 ## 🤝 Contributing
