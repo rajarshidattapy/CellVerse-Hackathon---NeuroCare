@@ -1,6 +1,6 @@
 # NeuroCardiac Digital Twin 🧠❤️
 
-{Deployed here}(https://neuro-care.vercel.app/)
+Deployed here:https://neuro-care.vercel.app/
 
 ## 🚀 Overview
 The **NeuroCardiac Digital Twin** is an AI-powered system that integrates **EEG and ECG data**, leveraging **machine learning** and **real-time anomaly detection** to provide **continuous health monitoring, predictive analytics, and personalized health recommendations**. This system bridges the gap between **cardiac and neural health** for **precision medicine at scale**.
