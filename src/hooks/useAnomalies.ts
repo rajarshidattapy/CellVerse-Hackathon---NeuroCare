@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { useECGData } from './useECGData';
 import { useEEGData } from './useEEGData';
 import { analyzeHealthData } from '../services/gemini';
@@ -7,10 +7,10 @@ interface Anomaly {
   id: string;
   timestamp: string;
   type: 'ECG' | 'EEG' | 'Combined';
-  severity: 'low' | 'medium' | 'high';
+  severity: 'low' | 'medium' | 'high' | 'normal';
   description: string;
   details: string;
-  status: 'active' | 'resolved';
+  status: 'active' | 'resolved' | 'normal';
   risks?: Array<{
     type: string;
     probability: number;
@@ -19,7 +19,7 @@ interface Anomaly {
   }>;
 }
 
-// Mock data sets for when LLM fails
+// Mock data sets including normal readings
 const mockAnomalySets = [
   [
     {
@@ -61,27 +61,48 @@ const mockAnomalySets = [
       id: '2',
       timestamp: new Date(Date.now() - 1000 * 60 * 15).toISOString(),
       type: 'ECG',
-      severity: 'medium',
-      description: 'Atrial Fibrillation Pattern Detected',
-      details: 'Irregular RR intervals and absence of consistent P waves suggesting atrial fibrillation. Moderate ventricular response rate observed.',
-      status: 'active',
+      severity: 'normal',
+      description: 'Normal Sinus Rhythm',
+      details: 'Regular heart rhythm with normal P waves, QRS complexes, and T waves. Heart rate within normal range.',
+      status: 'normal',
       risks: [{
-        type: 'Cardiac Arrhythmia',
-        probability: 0.72,
-        severity: 'medium',
+        type: 'Baseline Assessment',
+        probability: 0.05,
+        severity: 'normal',
         indicators: [
-          'Irregular RR intervals',
-          'Absence of P waves',
-          'Fibrillatory waves in V1',
-          'Variable QRS complex duration',
-          'Moderate ventricular response rate'
+          'Regular RR intervals',
+          'Normal P wave morphology',
+          'Normal QRS duration',
+          'Normal T wave orientation',
+          'Heart rate 60-100 bpm'
+        ]
+      }]
+    },
+    {
+      id: '3',
+      timestamp: new Date(Date.now() - 1000 * 60 * 30).toISOString(),
+      type: 'EEG',
+      severity: 'normal',
+      description: 'Normal Brain Wave Patterns',
+      details: 'Well-organized alpha rhythm with appropriate beta, theta, and delta distributions. No abnormal waveforms or asymmetries.',
+      status: 'normal',
+      risks: [{
+        type: 'Baseline Assessment',
+        probability: 0.03,
+        severity: 'normal',
+        indicators: [
+          'Dominant posterior alpha rhythm',
+          'Normal beta activity during tasks',
+          'Appropriate theta distribution',
+          'Expected delta presence',
+          'Symmetric hemispheric patterns'
         ]
       }]
     }
   ],
   [
     {
-      id: '3',
+      id: '4',
       timestamp: new Date().toISOString(),
       type: 'EEG',
       severity: 'high',
@@ -102,44 +123,51 @@ const mockAnomalySets = [
       }]
     },
     {
-      id: '4',
-      timestamp: new Date(Date.now() - 1000 * 60 * 30).toISOString(),
+      id: '5',
+      timestamp: new Date(Date.now() - 1000 * 60 * 15).toISOString(),
+      type: 'ECG',
+      severity: 'normal',
+      description: 'Healthy Cardiac Function',
+      details: 'Normal cardiac rhythm and conduction patterns. All parameters within healthy ranges.',
+      status: 'normal',
+      risks: [{
+        type: 'Baseline Assessment',
+        probability: 0.04,
+        severity: 'normal',
+        indicators: [
+          'Normal sinus rhythm',
+          'Regular heart rate',
+          'Normal QRS morphology',
+          'Normal ST segments',
+          'Regular P waves'
+        ]
+      }]
+    },
+    {
+      id: '6',
+      timestamp: new Date(Date.now() - 1000 * 60 * 45).toISOString(),
       type: 'Combined',
-      severity: 'medium',
-      description: 'Stress-Induced Cardiovascular Changes',
-      details: 'Elevated sympathetic nervous system activity affecting both cardiac rhythm and neural patterns. Suggests acute stress response.',
-      status: 'active',
-      risks: [
-        {
-          type: 'Stress Cardiomyopathy',
-          probability: 0.65,
-          severity: 'medium',
-          indicators: [
-            'Mild ST-segment changes',
-            'T-wave abnormalities',
-            'Elevated heart rate variability',
-            'Premature ventricular contractions',
-            'QT interval prolongation'
-          ]
-        },
-        {
-          type: 'Anxiety Attack',
-          probability: 0.78,
-          severity: 'medium',
-          indicators: [
-            'Increased beta wave activity',
-            'Frontal lobe hyperactivity',
-            'Reduced alpha wave amplitude',
-            'Irregular theta wave patterns',
-            'Heightened gamma oscillations'
-          ]
-        }
-      ]
+      severity: 'normal',
+      description: 'Optimal Cardio-Neurological Function',
+      details: 'Synchronized cardiac and neural patterns indicating healthy physiological state.',
+      status: 'normal',
+      risks: [{
+        type: 'Baseline Assessment',
+        probability: 0.02,
+        severity: 'normal',
+        indicators: [
+          'Coordinated heart-brain interaction',
+          'Normal autonomic balance',
+          'Healthy stress response',
+          'Regular sleep-wake patterns',
+          'Normal cognitive function indicators'
+        ]
+      }]
     }
   ],
   [
     {
-      id: '5',
+      id: '7',
       timestamp: new Date().toISOString(),
       type: 'ECG',
       severity: 'high',
@@ -160,23 +188,44 @@ const mockAnomalySets = [
       }]
     },
     {
-      id: '6',
-      timestamp: new Date(Date.now() - 1000 * 60 * 45).toISOString(),
+      id: '8',
+      timestamp: new Date(Date.now() - 1000 * 60 * 20).toISOString(),
       type: 'EEG',
-      severity: 'high',
-      description: 'Cerebral Ischemia Pattern',
-      details: 'Focal slowing with delta wave predominance in left temporal region. Pattern suggests regional cerebral ischemia.',
-      status: 'active',
+      severity: 'normal',
+      description: 'Normal Neural Activity',
+      details: 'Well-regulated brain activity with appropriate wave patterns across all frequency bands.',
+      status: 'normal',
       risks: [{
-        type: 'Ischemic Stroke',
-        probability: 0.82,
-        severity: 'high',
+        type: 'Baseline Assessment',
+        probability: 0.03,
+        severity: 'normal',
         indicators: [
-          'Focal delta activity in temporal region',
-          'Asymmetric alpha suppression',
-          'Periodic lateralized epileptiform discharges',
-          'Reduced fast activity',
-          'Abnormal background rhythm'
+          'Normal alpha rhythm',
+          'Appropriate beta activity',
+          'Regular theta patterns',
+          'Expected delta waves',
+          'Balanced hemispheric activity'
+        ]
+      }]
+    },
+    {
+      id: '9',
+      timestamp: new Date(Date.now() - 1000 * 60 * 60).toISOString(),
+      type: 'Combined',
+      severity: 'normal',
+      description: 'Stable Physiological State',
+      details: 'Harmonious interaction between cardiac and neural systems indicating good health status.',
+      status: 'normal',
+      risks: [{
+        type: 'Baseline Assessment',
+        probability: 0.02,
+        severity: 'normal',
+        indicators: [
+          'Normal heart rate variability',
+          'Balanced autonomic function',
+          'Regular breathing patterns',
+          'Normal cognitive processing',
+          'Healthy stress response'
         ]
       }]
     }
@@ -186,8 +235,8 @@ const mockAnomalySets = [
 export const useAnomalies = () => {
   const { ecgData } = useECGData();
   const { eegData } = useEEGData();
-  const [anomalies, setAnomalies] = useState<Anomaly[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [anomalies, setAnomalies] = useState<Anomaly[]>(mockAnomalySets[0]);
+  const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [mockSetIndex, setMockSetIndex] = useState(0);
 
@@ -207,7 +256,6 @@ export const useAnomalies = () => {
         console.error('LLM analysis failed, using mock data:', error);
       }
       
-      // If LLM fails, use mock data
       setAnomalies(mockAnomalySets[mockSetIndex]);
       
       setLoading(false);
@@ -217,10 +265,6 @@ export const useAnomalies = () => {
       setLoading(false);
     }
   }, [ecgData, eegData, mockSetIndex]);
-
-  useEffect(() => {
-    detectAnomalies();
-  }, [detectAnomalies]);
 
   const refresh = async () => {
     setMockSetIndex((prevIndex) => (prevIndex + 1) % mockAnomalySets.length);

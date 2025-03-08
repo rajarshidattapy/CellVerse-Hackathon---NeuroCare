@@ -3,7 +3,8 @@ import DigitalTwin from './DigitalTwin';
 import HealthAlerts from './HealthAlerts';
 import ApiConnections from './ApiConnections';
 import Recommendations from './Recommendations';
-import { Brain, Heart, AlertTriangle, Activity, UserCircle } from 'lucide-react';
+import FuturePredictions from './FuturePredictions';
+import { Brain, Heart, AlertTriangle, Activity, UserCircle, Clock } from 'lucide-react';
 
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState('twin');
@@ -53,6 +54,13 @@ const Dashboard = () => {
             >
               <Brain className="h-5 w-5 md:h-6 md:w-6" />
             </button>
+            <button
+              className={`p-3 rounded-lg ${activeTab === 'predictions' ? 'bg-blue-600' : 'hover:bg-gray-700'}`}
+              onClick={() => setActiveTab('predictions')}
+              title="Future Predictions"
+            >
+              <Clock className="h-5 w-5 md:h-6 md:w-6" />
+            </button>
           </div>
         </nav>
 
@@ -61,6 +69,7 @@ const Dashboard = () => {
           {activeTab === 'alerts' && <HealthAlerts />}
           {activeTab === 'api' && <ApiConnections />}
           {activeTab === 'recommendations' && <Recommendations />}
+          {activeTab === 'predictions' && <FuturePredictions />}
         </div>
       </main>
     </div>

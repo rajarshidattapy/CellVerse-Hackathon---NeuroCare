@@ -139,4 +139,26 @@ The tests simulate various health scenarios including:
 - Comprehensive test suite for validation
 
 ## API Integration
+
+The application integrates with:
+- Google Fit API for health data import
 - Gemini AI for health recommendations
+
+## Browser Support
+
+- Chrome (recommended)
+- Firefox
+- Safari
+- Edge
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Commit your changes
+4. Push to the branch
+5. Create a Pull Request
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.

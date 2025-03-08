@@ -1,31 +1,43 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
-// Initialize with a placeholder - in production this would come from environment variables
-let genAI: GoogleGenerativeAI | null = null;
+const genAI = new GoogleGenerativeAI('AIzaSyAR5VNhCHL2nKQ72Q7VXsCA_GblLhcpGeI');
 
-const initializeAI = (apiKey?: string) => {
-  if (!apiKey && !genAI) {
-    console.warn('Gemini API key not configured. Using mock data.');
-    return null;
+export async function generateHealthResponse(question: string, patientProfile: any): Promise<string> {
+  try {
+    const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
+
+    const prompt = `As a medical AI assistant, please provide a helpful and accurate response to this health-related question. Consider the patient's profile when relevant:
+
+Patient Profile:
+- Age: ${patientProfile.age}
+- Gender: ${patientProfile.gender}
+- Medical History: ${patientProfile.medicalHistory}
+
+Question: ${question}
+
+Please provide a clear, concise, and medically accurate response. Include relevant health advice and precautions when appropriate. If the question requires immediate medical attention, make sure to emphasize that.
+
+Important: Always maintain a professional tone and emphasize that this is general advice, not a replacement for professional medical consultation.`;
+
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    const text = response.text();
+
+    // Add disclaimer if not already present
+    if (!text.includes('medical professional')) {
+      return text + '\n\nNote: This information is for general guidance only. Please consult a medical professional for personalized medical advice.';
+    }
+
+    return text;
+  } catch (error) {
+    console.error('Error generating health response:', error);
+    return "I apologize, but I'm having trouble generating a response. For accurate medical advice, please consult with a healthcare professional.";
   }
-  
-  if (apiKey) {
-    genAI = new GoogleGenerativeAI(apiKey);
-  }
-  
-  return genAI;
-};
+}
 
 export async function analyzeHealthData(ecgData: any[], eegData: any[], anomalies: any[]) {
   try {
-    const ai = initializeAI();
-    
-    // If no API key is configured, return mock data
-    if (!ai) {
-      return getMockAnalysis(anomalies);
-    }
-
-    const model = ai.getGenerativeModel({ model: 'gemini-pro' });
+    const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
 
     // Format anomalies for better prompt structure
     const formattedAnomalies = anomalies.map(a => ({
